@@ -1,1 +1,338 @@
+/* ============================================================
+   PIZZA SALES SQL ANALYSIS
+   ============================================================
+   Project:
+   Pizza Sales Analysis
 
+   Purpose:
+   Analyze pizza sales data to answer common business questions
+   related to orders, revenue, pizza performance, and customer
+   ordering patterns.
+
+   Tables (DATA):
+   - orders
+   - order_details
+   - pizzas
+   - pizza_types
+
+   SQL Concepts --USED:
+   - JOIN
+   - GROUP BY
+   - Aggregate Functions
+   - CTEs
+   - Subqueries
+   - Window Functions
+   - RANK()
+   - LAG()
+   - PARTITION BY
+   - Date/Time Functions
+   ============================================================ */
+
+
+/* ============================================================
+   Q1. TOTAL NUMBER OF ORDERS
+   ------------------------------------------------------------
+   Business Question:
+   How many orders were placed?
+   ============================================================ */
+
+SELECT
+    COUNT(order_id) AS total_orders
+FROM orders;
+
+
+/* ============================================================
+   Q2. TOTAL REVENUE GENERATED
+   ------------------------------------------------------------
+   Business Question:
+   What is the total revenue generated from pizza sales?
+
+   Revenue = Quantity × Pizza Price
+   ============================================================ */
+
+SELECT
+    ROUND(SUM(od.quantity * p.price), 2) AS total_revenue
+FROM order_details od
+JOIN pizzas p
+    ON od.pizza_id = p.pizza_id;
+
+
+/* ============================================================
+   Q3. HIGHEST-PRICED PIZZA
+   ------------------------------------------------------------
+   Business Question:
+   Which pizza has the highest price?
+   ============================================================ */
+
+SELECT TOP 1
+    pt.name AS pizza_name,
+    p.price
+FROM pizza_types pt
+JOIN pizzas p
+    ON pt.pizza_type_id = p.pizza_type_id
+ORDER BY p.price DESC;
+
+
+/* ============================================================
+   Q4. MOST COMMONLY ORDERED PIZZA SIZE
+   ------------------------------------------------------------
+   Business Question:
+   Which pizza size was ordered the most?
+
+   Total quantity is used to determine the most popular size.
+   ============================================================ */
+
+SELECT
+    p.size,
+    SUM(od.quantity) AS total_quantity
+FROM pizzas p
+JOIN order_details od
+    ON p.pizza_id = od.pizza_id
+GROUP BY p.size
+ORDER BY total_quantity DESC;
+
+
+/* ============================================================
+   Q5. TOP 5 MOST ORDERED PIZZA TYPES
+   ------------------------------------------------------------
+   Business Question:
+   What are the top 5 most ordered pizza types based on
+   total quantity sold?
+   ============================================================ */
+
+SELECT TOP 5
+    pt.name AS pizza_name,
+    SUM(od.quantity) AS total_quantity
+FROM pizza_types pt
+JOIN pizzas p
+    ON pt.pizza_type_id = p.pizza_type_id
+JOIN order_details od
+    ON p.pizza_id = od.pizza_id
+GROUP BY pt.name
+ORDER BY total_quantity DESC;
+
+
+/* ============================================================
+   Q6. TOTAL QUANTITY ORDERED BY PIZZA CATEGORY
+   ------------------------------------------------------------
+   Business Question:
+   What is the total quantity of pizzas ordered for each
+   pizza category?
+   ============================================================ */
+
+SELECT
+    pt.category,
+    SUM(od.quantity) AS total_quantity
+FROM pizza_types pt
+JOIN pizzas p
+    ON pt.pizza_type_id = p.pizza_type_id
+JOIN order_details od
+    ON p.pizza_id = od.pizza_id
+GROUP BY pt.category
+ORDER BY total_quantity DESC;
+
+
+/* ============================================================
+   Q7. DISTRIBUTION OF ORDERS BY HOUR
+   ------------------------------------------------------------
+   Business Question:
+   At what hours of the day are the most orders placed?
+   ============================================================ */
+
+SELECT
+    DATEPART(HOUR, time) AS order_hour,
+    COUNT(order_id) AS total_orders
+FROM orders
+GROUP BY DATEPART(HOUR, time)
+ORDER BY total_orders DESC;
+
+
+/* ============================================================
+   Q8. NUMBER OF PIZZA TYPES BY CATEGORY
+   ------------------------------------------------------------
+   Business Question:
+   How many different pizza types are available in each
+   category?
+   ============================================================ */
+
+SELECT
+    category,
+    COUNT(*) AS pizza_type_count
+FROM pizza_types
+GROUP BY category
+ORDER BY pizza_type_count DESC;
+
+
+/* ============================================================
+   Q9. AVERAGE NUMBER OF PIZZAS ORDERED PER DAY
+   ------------------------------------------------------------
+   Business Question:
+   What is the average number of pizzas ordered per day?
+   ============================================================ */
+
+WITH daily_orders AS (
+    SELECT
+        o.date,
+        SUM(od.quantity) AS daily_quantity
+    FROM orders o
+    JOIN order_details od
+        ON o.order_id = od.order_id
+    GROUP BY o.date
+)
+
+SELECT
+    ROUND(AVG(daily_quantity), 2) AS avg_pizzas_per_day
+FROM daily_orders;
+
+
+/* ============================================================
+   Q10. TOP 3 PIZZA TYPES BY REVENUE
+   ------------------------------------------------------------
+   Business Question:
+   Which 3 pizza types generated the highest revenue?
+
+   Revenue = Pizza Price × Quantity
+   ============================================================ */
+
+SELECT TOP 3
+    pt.name AS pizza_name,
+    ROUND(SUM(p.price * od.quantity), 2) AS total_revenue
+FROM pizza_types pt
+JOIN pizzas p
+    ON pt.pizza_type_id = p.pizza_type_id
+JOIN order_details od
+    ON p.pizza_id = od.pizza_id
+GROUP BY pt.name
+ORDER BY total_revenue DESC;
+
+
+/* ============================================================
+   Q11. REVENUE CONTRIBUTION BY PIZZA TYPE
+   ------------------------------------------------------------
+   Business Question:
+   What percentage of total revenue does each pizza type
+   contribute?
+   ============================================================ */
+
+WITH total_revenue AS (
+    SELECT
+        SUM(p.price * od.quantity) AS total_revenue
+    FROM pizzas p
+    JOIN order_details od
+        ON p.pizza_id = od.pizza_id
+),
+
+pizza_revenue AS (
+    SELECT
+        pt.category,
+        pt.name AS pizza_name,
+        SUM(p.price * od.quantity) AS revenue
+    FROM pizza_types pt
+    JOIN pizzas p
+        ON pt.pizza_type_id = p.pizza_type_id
+    JOIN order_details od
+        ON p.pizza_id = od.pizza_id
+    GROUP BY
+        pt.category,
+        pt.name
+)
+
+SELECT
+    pr.category,
+    pr.pizza_name,
+    ROUND(
+        (pr.revenue / tr.total_revenue) * 100,
+        2
+    ) AS revenue_percentage
+FROM pizza_revenue pr
+CROSS JOIN total_revenue tr
+ORDER BY revenue_percentage DESC;
+
+
+/* ============================================================
+   Q12. CUMULATIVE REVENUE OVER TIME
+   ------------------------------------------------------------
+   Business Question:
+   How does cumulative revenue change over time?
+
+   Revenue = Pizza Price × Quantity
+   ============================================================ */
+
+WITH daily_revenue AS (
+    SELECT
+        o.date,
+        SUM(p.price * od.quantity) AS daily_revenue
+    FROM orders o
+    JOIN order_details od
+        ON o.order_id = od.order_id
+    JOIN pizzas p
+        ON p.pizza_id = od.pizza_id
+    GROUP BY o.date
+)
+
+SELECT
+    date,
+    ROUND(daily_revenue, 2) AS daily_revenue,
+    ROUND(
+        SUM(daily_revenue) OVER (
+            ORDER BY date
+        ),
+        2
+    ) AS cumulative_revenue
+FROM daily_revenue
+ORDER BY date;
+
+
+/* ============================================================
+   Q13. TOP 3 PIZZA TYPES BY REVENUE WITHIN EACH CATEGORY
+   ------------------------------------------------------------
+   Business Question:
+   What are the top 3 pizza types by revenue within each
+   pizza category?
+   ============================================================ */
+
+WITH pizza_revenue AS (
+    SELECT
+        pt.category,
+        pt.name AS pizza_name,
+        ROUND(
+            SUM(p.price * od.quantity),
+            2
+        ) AS revenue
+    FROM order_details od
+    JOIN pizzas p
+        ON p.pizza_id = od.pizza_id
+    JOIN pizza_types pt
+        ON p.pizza_type_id = pt.pizza_type_id
+    GROUP BY
+        pt.category,
+        pt.name
+),
+
+ranked_pizzas AS (
+    SELECT
+        category,
+        pizza_name,
+        revenue,
+        RANK() OVER (
+            PARTITION BY category
+            ORDER BY revenue DESC
+        ) AS revenue_rank
+    FROM pizza_revenue
+)
+
+SELECT
+    category,
+    pizza_name,
+    revenue,
+    revenue_rank
+FROM ranked_pizzas
+WHERE revenue_rank <= 3
+ORDER BY
+    category,
+    revenue_rank;
+
+
+/* ============================================================
+   END OF ANALYSIS
+   ============================================================ */
