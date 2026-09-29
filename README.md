@@ -6,7 +6,7 @@ This project analyzes pizza sales data using SQL Server to understand sales perf
 
 The analysis answers a series of business questions using SQL queries and focuses on extracting meaningful insights from transactional sales data.
 
-<img width="945" height="502" alt="image" src="https://github.com/user-attachments/assets/c953102a-6818-4a92-aa8a-cf1ce344f23d" />
+
 
 
 ---
