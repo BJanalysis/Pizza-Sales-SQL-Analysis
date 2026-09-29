@@ -126,6 +126,9 @@ The analysis can be used to identify:
 * Peak ordering hours
 * Cumulative revenue growth over time
 
+  <img width="882" height="536" alt="image" src="https://github.com/user-attachments/assets/001fbe8a-7d71-4bac-90ea-61f63dc526fa" />
+
+
 ---
 
 ## Project Objective
