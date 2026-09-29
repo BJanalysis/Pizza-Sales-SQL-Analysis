@@ -1,10 +1,11 @@
-<img width="945" height="502" alt="image" src="https://github.com/user-attachments/assets/2f65116e-ec28-4e5b-a856-31eace0bd053" />#  Pizza Sales SQL Analysis
-
 ## 📌 Project Overview
 
 This project analyzes pizza sales data using SQL Server to understand sales performance, revenue contribution, pizza popularity, and ordering patterns.
 
 The analysis answers a series of business questions using SQL queries and focuses on extracting meaningful insights from transactional sales data.
+
+<img width="745" height="402" alt="image" src="https://github.com/user-attachments/assets/b554242e-8c6f-4f88-a673-949f00218e5a" />
+
 
 
 
