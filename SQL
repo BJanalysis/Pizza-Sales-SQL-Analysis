@@ -2,7 +2,7 @@
    PIZZA SALES SQL ANALYSIS
    ============================================================
    Project:
-   Pizza Sales Analysis
+   Pizza Sales Analysis (SQL)
 
    Purpose:
    Analyze pizza sales data to answer common business questions
