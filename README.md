@@ -22,7 +22,7 @@ The analysis answers a series of business questions using SQL queries and focuse
 
 ##  Dataset
 
-The dataset contains four main tables:
+The dataset contains 4 main tables:
 
 * `orders` — Order date, time, and order information
 * `order_details` — Pizza quantities and order-level details
