@@ -32,7 +32,6 @@
 /* ============================================================
    Q1. TOTAL NUMBER OF ORDERS
    ------------------------------------------------------------
-   Business Question:
    How many orders were placed?
    ============================================================ */
 
@@ -44,7 +43,6 @@ FROM orders;
 /* ============================================================
    Q2. TOTAL REVENUE GENERATED
    ------------------------------------------------------------
-   Business Question:
    What is the total revenue generated from pizza sales?
 
    Revenue = Quantity × Pizza Price
@@ -60,7 +58,6 @@ JOIN pizzas p
 /* ============================================================
    Q3. HIGHEST-PRICED PIZZA
    ------------------------------------------------------------
-   Business Question:
    Which pizza has the highest price?
    ============================================================ */
 
@@ -76,7 +73,6 @@ ORDER BY p.price DESC;
 /* ============================================================
    Q4. MOST COMMONLY ORDERED PIZZA SIZE
    ------------------------------------------------------------
-   Business Question:
    Which pizza size was ordered the most?
 
    Total quantity is used to determine the most popular size.
